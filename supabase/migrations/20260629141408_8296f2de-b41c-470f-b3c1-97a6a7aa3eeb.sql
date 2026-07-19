@@ -1,0 +1,1 @@
+ALTER TYPE public.deposit_method ADD VALUE IF NOT EXISTS 'binance_pay';

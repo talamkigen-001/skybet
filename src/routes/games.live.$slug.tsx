@@ -1,0 +1,62 @@
+import { createFileRoute, notFound } from "@tanstack/react-router";
+import { GAMES } from "@/lib/games-catalog";
+import { RouletteGame } from "@/components/live/RouletteGame";
+import { CrashVariantGame } from "@/components/live/CrashVariantGame";
+import { MinesGame } from "@/components/live/MinesGame";
+import { PlinkoGame } from "@/components/live/PlinkoGame";
+import { CrazyTimeGame } from "@/components/live/CrazyTimeGame";
+import { CoinFlipGame } from "@/components/live/CoinFlipGame";
+
+const SLUG_TO_COMPONENT: Record<string, React.ComponentType<any>> = {
+  "lucky-jet": () => <CrashVariantGame slug="lucky-jet" title="Lucky Jet" glyph="🧑‍🚀" />,
+  "speed-and-cash": () => (
+    <CrashVariantGame slug="speed-and-cash" title="Speed & Cash" glyph="🏎️" />
+  ),
+  "rocket-queen": () => <CrashVariantGame slug="rocket-queen" title="Rocket Queen" glyph="👸" />,
+  aviator: () => <CrashVariantGame slug="aviator" title="Aviator" glyph="✈️" />,
+  jetx: () => <CrashVariantGame slug="jetx" title="JetX" glyph="🚀" />,
+  mines: MinesGame,
+  plinko: PlinkoGame,
+  "crazy-time": CrazyTimeGame,
+  "coin-flip": CoinFlipGame,
+  "roulette-live": RouletteGame,
+};
+
+const VALID_SLUGS = new Set(Object.keys(SLUG_TO_COMPONENT));
+
+export const Route = createFileRoute("/games/live/$slug")({
+  head: ({ params }) => {
+    const game = GAMES.find((g) => g.slug === params.slug);
+    return {
+      meta: [
+        { title: game ? `${game.name} — Live Casino` : "Live Game" },
+        {
+          name: "description",
+          content: game ? `Play ${game.name} live with real-time betting.` : "Live casino game",
+        },
+      ],
+    };
+  },
+  beforeLoad: (({ params }: any) => {
+    if (!VALID_SLUGS.has(params.slug)) throw notFound();
+  }) as any,
+  component: LiveGameRoute,
+});
+
+function LiveGameRoute() {
+  const { slug } = Route.useParams();
+  const GameComponent = SLUG_TO_COMPONENT[slug];
+
+  if (!GameComponent) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold">Game not found</h1>
+          <p className="text-muted-foreground mt-2">This game doesn't exist.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <GameComponent />;
+}
