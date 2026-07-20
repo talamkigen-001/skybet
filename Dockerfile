@@ -1,5 +1,7 @@
 # ── Stage 1: Build ────────────────────────────────────────────────────────────
-FROM node:20-alpine AS builder
+# Must use Debian-based image (not alpine) — rolldown uses native Rust bindings
+# compiled for glibc; alpine uses musl which is incompatible and causes build failures.
+FROM node:20-slim AS builder
 WORKDIR /app
 
 # Copy package files and install ALL deps (including dev for the build)
@@ -25,7 +27,7 @@ ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # ── Stage 2: Production image ─────────────────────────────────────────────────
-FROM node:20-alpine AS runner
+FROM node:20-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
