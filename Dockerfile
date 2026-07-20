@@ -6,8 +6,13 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy source and build
+# Copy source
 COPY . .
+
+# Tell Nitro to target Node.js server (not Cloudflare which is the Lovable default)
+ENV NITRO_PRESET=node-server
+
+# Build args for Vite — passed at build time from Railway variables
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_PUBLISHABLE_KEY
 ARG VITE_WS_URL
@@ -16,6 +21,7 @@ ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
 ENV VITE_SUPABASE_PUBLISHABLE_KEY=$VITE_SUPABASE_PUBLISHABLE_KEY
 ENV VITE_WS_URL=$VITE_WS_URL
 ENV VITE_API_URL=$VITE_API_URL
+
 RUN npm run build
 
 # ── Stage 2: Production image ─────────────────────────────────────────────────
@@ -23,12 +29,12 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV PORT=3000
 
-# Install serve to host the static files
-RUN npm install -g serve
-
-# Copy only the built output
-COPY --from=builder /app/dist ./dist
+# Copy the Nitro node-server output (.output/server + .output/public)
+COPY --from=builder /app/.output ./.output
 
 EXPOSE 3000
-CMD ["serve", "dist", "-p", "3000", "--single"]
+
+# Run the Nitro node server entry point
+CMD ["node", ".output/server/index.mjs"]
