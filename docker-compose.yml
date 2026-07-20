@@ -67,13 +67,11 @@ services:
 
   # ── Frontend (Vite / TanStack) ──────────────────────────────────────────────
   frontend:
-    image: node:20-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: norocjetx_frontend
-    working_dir: /app
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: sh -c "npm install && npm run build && npx serve dist -p 3000"
+    restart: unless-stopped
     environment:
       VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
