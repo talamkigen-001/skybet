@@ -4,10 +4,18 @@ WORKDIR /app
 
 # Copy package files and install ALL deps (including dev for the build)
 COPY package.json package-lock.json ./
-RUN npm install --frozen-lockfile
+RUN npm ci
 
 # Copy source and build
 COPY . .
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_PUBLISHABLE_KEY
+ARG VITE_WS_URL
+ARG VITE_API_URL
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+ENV VITE_SUPABASE_PUBLISHABLE_KEY=$VITE_SUPABASE_PUBLISHABLE_KEY
+ENV VITE_WS_URL=$VITE_WS_URL
+ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # ── Stage 2: Production image ─────────────────────────────────────────────────

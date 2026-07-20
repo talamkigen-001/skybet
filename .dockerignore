@@ -1,0 +1,15 @@
+node_modules
+dist
+dist-ssr
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+*.log
+*.md
+server
+supabase
+.agents
+docker-compose.yml
+nginx.conf
