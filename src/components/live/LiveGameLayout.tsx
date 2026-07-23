@@ -1,4 +1,5 @@
-import { Link } from "@tanstack/react-router";
+"use client";
+import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { useGame } from "@/lib/game-store";
 import { useLiveGame } from "@/lib/live-game-store";
@@ -31,7 +32,7 @@ export function LiveGameLayout({ title, glyph, children, choices, onPlay, canPla
 
       <div className="max-w-[1600px] mx-auto w-full px-3 sm:px-4 pt-3 flex items-center justify-between">
         <Link
-          to="/games/live"
+          href="/games/live"
           className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1"
         >
           ← Back to live casino

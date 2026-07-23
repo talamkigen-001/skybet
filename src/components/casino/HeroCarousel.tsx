@@ -1,4 +1,5 @@
-import { Link } from "@tanstack/react-router";
+"use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 interface Slide {
@@ -73,7 +74,7 @@ export function HeroCarousel() {
               </h1>
               <p className="mt-2 text-sm md:text-base opacity-90 max-w-md">{s.body}</p>
               <Link
-                to={s.to as never}
+                href={s.to}
                 className="inline-flex mt-4 px-6 py-3 rounded-full bg-white text-black text-sm font-bold hover:scale-105 transition-transform shadow-xl"
               >
                 {s.cta} →

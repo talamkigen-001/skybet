@@ -1,3 +1,4 @@
+"use client";
 import { useLiveGame } from "@/lib/live-game-store";
 
 export function LiveHistoryStrip() {

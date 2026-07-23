@@ -1,4 +1,6 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCasino } from "@/lib/casino-store";
 import { useTranslation, TranslationKeys } from "@/lib/i18n";
 
@@ -19,7 +21,7 @@ const BOTTOM: NavItem[] = [
 ];
 
 export function Sidebar() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const pathname = usePathname();
   const favCount = useCasino((s) => s.favorites.length);
   const { t } = useTranslation();
 
@@ -30,7 +32,7 @@ export function Sidebar() {
           {TOP.map((i) => (
             <Item
               key={i.to}
-              to={i.to}
+              href={i.to}
               label={t(i.labelKey)}
               icon={i.icon}
               active={pathname === i.to}
@@ -41,7 +43,7 @@ export function Sidebar() {
           {BOTTOM.map((i) => (
             <Item
               key={i.to}
-              to={i.to}
+              href={i.to}
               label={t(i.labelKey)}
               icon={i.icon}
               active={pathname === i.to}
@@ -55,7 +57,7 @@ export function Sidebar() {
           <div className="text-xs font-semibold text-primary">{t("sidebar.welcome_bonus")}</div>
           <div className="text-[11px] text-muted-foreground mt-1">{t("sidebar.bonus_desc")}</div>
           <Link
-            to={"/promotions" as never}
+            href="/promotions"
             className="mt-2 inline-flex text-xs font-semibold text-foreground hover:text-primary"
           >
             {t("sidebar.claim")}
@@ -78,13 +80,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Item({
-  to,
+  href,
   label,
   icon,
   active,
   badge,
 }: {
-  to: string;
+  href: string;
   label: string;
   icon: string;
   active?: boolean;
@@ -92,7 +94,7 @@ function Item({
 }) {
   return (
     <Link
-      to={to as never}
+      href={href}
       className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
         active
           ? "bg-primary/15 text-primary font-semibold"

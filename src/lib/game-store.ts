@@ -121,7 +121,7 @@ let wsInstance: WebSocket | null = null;
 let wsReconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
 const WS_URL = (() => {
-  const envUrl = (import.meta as any).env?.VITE_WS_URL as string | undefined;
+  const envUrl = process.env.NEXT_PUBLIC_WS_URL as string | undefined;
   if (envUrl) return envUrl;
   if (typeof window !== "undefined") {
     const proto = window.location.protocol === "https:" ? "wss:" : "ws";
@@ -373,17 +373,17 @@ export const useGame = create<GameState>()(
 
             if (myBet && !myBet.cashedAt && myBet.autoCashout && m >= myBet.autoCashout) {
               const cashed = { ...myBet, cashedAt: myBet.autoCashout };
-              bal += myBet.amount * myBet.autoCashout;
+              bal += myBet.amount * cashed.cashedAt;
               myBet = cashed;
               bets = bets.map((b) => (b.isYou && (b.betIndex ?? 0) === 0 ? cashed : b));
-              void offlineDbUpdate(myBet.amount * myBet.autoCashout, "win");
+              void offlineDbUpdate(cashed.amount * cashed.cashedAt, "win");
             }
             if (myBet2 && !myBet2.cashedAt && myBet2.autoCashout && m >= myBet2.autoCashout) {
               const cashed = { ...myBet2, cashedAt: myBet2.autoCashout };
-              bal += myBet2.amount * myBet2.autoCashout;
+              bal += myBet2.amount * cashed.cashedAt;
               myBet2 = cashed;
               bets = bets.map((b) => (b.isYou && (b.betIndex ?? 0) === 1 ? cashed : b));
-              void offlineDbUpdate(myBet2.amount * myBet2.autoCashout, "win");
+              void offlineDbUpdate(cashed.amount * cashed.cashedAt, "win");
             }
 
             set({ multiplier: m, balance: bal, myBet, myBet2, bets });
@@ -505,7 +505,7 @@ function handleServerEvent(
   const s = get();
   switch (event) {
     case "state": {
-      const serverBets = (data.bets ?? []).map(serverBetToLocal);
+      const serverBets: ActiveBet[] = (data.bets ?? []).map(serverBetToLocal);
       const myBet = serverBets.find((b) => b.userId === s.userId && (b.betIndex ?? 0) === 0) || null;
       const myBet2 = serverBets.find((b) => b.userId === s.userId && (b.betIndex ?? 0) === 1) || null;
       set({

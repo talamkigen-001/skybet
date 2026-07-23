@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useRef } from "react";
 import { useGame } from "@/lib/game-store";
 

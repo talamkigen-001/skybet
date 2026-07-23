@@ -1,4 +1,5 @@
-import { Link } from "@tanstack/react-router";
+"use client";
+import Link from "next/link";
 import { useCasino } from "@/lib/casino-store";
 import type { Game, Badge } from "@/lib/games-catalog";
 import { useGame } from "@/lib/game-store";
@@ -111,7 +112,7 @@ export function GameCard({ game }: { game: Game }) {
 
   if (playable && game.href) {
     return (
-      <Link to={game.href as never} onClick={() => markPlayed(game.id)}>
+      <Link href={game.href} onClick={() => markPlayed(game.id)}>
         {inner}
       </Link>
     );

@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useRef, useCallback } from "react";
 import { useLiveGame, handValue } from "@/lib/live-game-store";
 import { LiveGameLayout } from "./LiveGameLayout";

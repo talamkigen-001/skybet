@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import { useGame } from "@/lib/game-store";
 import { useLocale, formatMoney } from "@/lib/locale";

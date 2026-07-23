@@ -1,4 +1,5 @@
-import { Link } from "@tanstack/react-router";
+"use client";
+import Link from "next/link";
 import { useTranslation } from "@/lib/i18n";
 
 export function CasinoFooter() {
@@ -71,7 +72,7 @@ export function CasinoFooter() {
               {c.links.map(([l, h]) => (
                 <li key={l}>
                   <Link
-                    to={h as never}
+                    href={h}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {l}

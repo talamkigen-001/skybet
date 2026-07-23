@@ -1,3 +1,4 @@
+"use client";
 import { useGame } from "@/lib/game-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,7 +75,7 @@ export function BetPanel() {
 
       {canCashout ? (
         <Button
-          onClick={s.cashOut}
+          onClick={() => s.cashOut()}
           className="h-16 text-xl font-bold bg-[var(--gold)] hover:bg-[var(--gold)]/90 text-background"
           style={{ animation: "pulse-glow 1.2s ease-in-out infinite" }}
         >
@@ -82,7 +83,7 @@ export function BetPanel() {
         </Button>
       ) : hasQueued ? (
         <Button
-          onClick={s.cancelBet}
+          onClick={() => s.cancelBet()}
           variant="outline"
           className="h-16 text-lg border-destructive text-destructive hover:bg-destructive/10"
         >
@@ -94,7 +95,7 @@ export function BetPanel() {
         </Button>
       ) : (
         <Button
-          onClick={s.placeBet}
+          onClick={() => s.placeBet()}
           disabled={s.balance < s.betAmount}
           className="h-16 text-xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground"
         >

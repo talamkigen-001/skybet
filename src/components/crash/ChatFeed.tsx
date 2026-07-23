@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useGame, sendWsEvent } from "@/lib/game-store";
 import { useLocale, formatMoney } from "@/lib/locale";

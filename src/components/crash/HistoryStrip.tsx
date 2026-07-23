@@ -1,5 +1,6 @@
+"use client";
 import { useGame } from "@/lib/game-store";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 
 export function HistoryStrip() {
   const history = useGame((s) => s.history);
@@ -20,8 +21,7 @@ export function HistoryStrip() {
               : "bg-secondary/60 text-muted-foreground border-border/40";
         return (
           <Link
-            to="/fairness"
-            search={{ nonce: r.nonce }}
+            href={`/fairness?nonce=${r.nonce}`}
             key={r.id}
             className={`shrink-0 font-mono-tabular text-xs font-semibold px-3 py-2 rounded-lg border ${color} hover:scale-105 transition-transform`}
             title={`Round #${r.nonce} — verify`}

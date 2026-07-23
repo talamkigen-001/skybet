@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useRef, useCallback } from "react";
 import { useLiveGame, ROULETTE_NUMBERS, RED_NUMBERS } from "@/lib/live-game-store";
 import { LiveGameLayout } from "./LiveGameLayout";

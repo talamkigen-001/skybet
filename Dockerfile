@@ -1,42 +1,40 @@
 # ── Stage 1: Build ────────────────────────────────────────────────────────────
-# Must use Debian-based image (not alpine) — rolldown uses native Rust bindings
-# compiled for glibc; alpine uses musl which is incompatible and causes build failures.
-FROM node:20-slim AS builder
+FROM node:22-slim AS builder
 WORKDIR /app
 
-# Copy package files and install ALL deps (including dev for the build)
+# Copy package files and install dependencies
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy source
+# Copy source code
 COPY . .
 
-# Tell Nitro to target Node.js server (not Cloudflare which is the Lovable default)
-ENV NITRO_PRESET=node-server
+# Build args for Next.js
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+ARG NEXT_PUBLIC_WS_URL
+ARG NEXT_PUBLIC_API_URL
 
-# Build args for Vite — passed at build time from Railway variables
-ARG VITE_SUPABASE_URL
-ARG VITE_SUPABASE_PUBLISHABLE_KEY
-ARG VITE_WS_URL
-ARG VITE_API_URL
-ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
-ENV VITE_SUPABASE_PUBLISHABLE_KEY=$VITE_SUPABASE_PUBLISHABLE_KEY
-ENV VITE_WS_URL=$VITE_WS_URL
-ENV VITE_API_URL=$VITE_API_URL
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 RUN npm run build
 
-# ── Stage 2: Production image ─────────────────────────────────────────────────
-FROM node:20-slim AS runner
+# ── Stage 2: Production Runner ────────────────────────────────────────────────
+FROM node:22-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Copy the Nitro node-server output (.output/server + .output/public)
-COPY --from=builder /app/.output ./.output
+# Copy node_modules, app files, and built Next.js artifacts
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
 
 EXPOSE 3000
 
-# Run the Nitro node server entry point
-CMD ["node", ".output/server/index.mjs"]
+CMD ["npm", "start"]

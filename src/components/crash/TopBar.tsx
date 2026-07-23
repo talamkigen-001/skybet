@@ -1,4 +1,6 @@
-import { Link } from "@tanstack/react-router";
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useGame } from "@/lib/game-store";
 import { Button } from "@/components/ui/button";
 
@@ -12,14 +14,14 @@ export function TopBar() {
   return (
     <header className="w-full border-b border-border/60 bg-background/60 backdrop-blur-md sticky top-0 z-30">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
-        <Link to="/" className="flex items-center gap-2 font-display font-bold text-lg">
+        <Link href="/" className="flex items-center gap-2 font-display font-bold text-lg">
           <span className="inline-block w-7 h-7 rounded-md bg-gradient-to-br from-[var(--gold)] to-accent" />
           NOROC <span className="text-primary">JETX</span>
         </Link>
         <nav className="hidden md:flex items-center gap-1 text-sm ml-4">
-          <NavLink to="/">Game</NavLink>
-          <NavLink to="/fairness">Provably fair</NavLink>
-          <NavLink to="/stats">Stats</NavLink>
+          <NavLink href="/">Game</NavLink>
+          <NavLink href="/fairness">Provably fair</NavLink>
+          <NavLink href="/stats">Stats</NavLink>
         </nav>
         <div className="flex-1" />
         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/60 border border-border">
@@ -39,12 +41,17 @@ export function TopBar() {
   );
 }
 
-function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
+function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isActive = pathname === href;
   return (
     <Link
-      to={to}
-      className="px-3 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
-      activeProps={{ className: "text-foreground bg-secondary" }}
+      href={href}
+      className={`px-3 py-1.5 rounded-md transition-colors ${
+        isActive
+          ? "text-foreground bg-secondary"
+          : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+      }`}
     >
       {children}
     </Link>

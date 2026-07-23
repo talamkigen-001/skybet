@@ -1,3 +1,4 @@
+"use client";
 import { useGame } from "@/lib/game-store";
 
 export function PlayerList() {

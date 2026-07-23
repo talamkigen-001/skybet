@@ -1,4 +1,5 @@
-import { Link } from "@tanstack/react-router";
+"use client";
+import Link from "next/link";
 import type { Game } from "@/lib/games-catalog";
 import { GameCard } from "./GameCard";
 
@@ -23,7 +24,7 @@ export function GameRow({
         </h2>
         {viewAll && (
           <Link
-            to={viewAll as never}
+            href={viewAll}
             className="text-xs text-muted-foreground hover:text-primary font-semibold"
           >
             View all →

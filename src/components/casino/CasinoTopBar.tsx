@@ -1,4 +1,6 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+"use client";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useGame } from "@/lib/game-store";
 import { GAMES, PROVIDERS } from "@/lib/games-catalog";
@@ -62,7 +64,7 @@ export function CasinoTopBar() {
   const [localeOpen, setLocaleOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const localeRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     const h = (e: MouseEvent) => {
@@ -88,7 +90,7 @@ export function CasinoTopBar() {
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="max-w-[1600px] mx-auto px-4 min-h-[120px] py-2 flex items-center gap-3 sm:gap-5">
         <Link
-          to="/"
+          href="/"
           className="flex items-center gap-2 font-display font-extrabold text-lg shrink-0"
         >
           <img
@@ -123,7 +125,7 @@ export function CasinoTopBar() {
           {open && (
             <div className="absolute top-full left-0 right-0 mt-2 rounded-2xl glass-panel p-3 z-50 max-h-[60vh] overflow-y-auto">
               {q && results.length === 0 && (
-                <div className="text-sm text-muted-foreground p-3">No matches for "{q}"</div>
+                <div className="text-sm text-muted-foreground p-3">{`No matches for "${q}"`}</div>
               )}
               {results.length > 0 && (
                 <div>
@@ -136,8 +138,8 @@ export function CasinoTopBar() {
                       onClick={() => {
                         setOpen(false);
                         setQ("");
-                        if (g.href) navigate({ to: g.href as never });
-                        else navigate({ to: `/casino/${g.category}` as never });
+                        if (g.href) router.push(g.href);
+                        else router.push(`/casino/${g.category}`);
                       }}
                       className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-left"
                     >
@@ -226,7 +228,7 @@ export function CasinoTopBar() {
 
           {!user ? (
             <Link
-              to="/auth"
+              href="/auth"
               className="hidden sm:inline-flex px-4 py-2 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors whitespace-nowrap shadow-sm text-sm"
             >
               {t("topbar.sign_in")}
@@ -234,7 +236,7 @@ export function CasinoTopBar() {
           ) : (
             <div className="flex items-center gap-2">
               <Link
-                to="/wallet"
+                href="/wallet"
                 className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/80 hover:bg-secondary border border-border/50 transition-colors shadow-inner"
               >
                 <div className="w-5 h-5 rounded-md bg-gradient-to-tr from-emerald-400 to-cyan-400 flex items-center justify-center text-black text-[10px] font-bold">
@@ -262,7 +264,7 @@ export function CasinoTopBar() {
                     <button
                       onClick={() => {
                         setUserOpen(false);
-                        navigate({ to: "/wallet" });
+                        router.push("/wallet");
                       }}
                       className="w-full text-left px-3 py-2 rounded-lg hover:bg-secondary text-sm font-semibold"
                     >
@@ -271,7 +273,7 @@ export function CasinoTopBar() {
                     <button
                       onClick={() => {
                         setUserOpen(false);
-                        navigate({ to: "/profile" });
+                        router.push("/profile");
                       }}
                       className="w-full text-left px-3 py-2 rounded-lg hover:bg-secondary text-sm"
                     >
@@ -281,7 +283,7 @@ export function CasinoTopBar() {
                       <button
                         onClick={() => {
                           setUserOpen(false);
-                          navigate({ to: "/admin" });
+                          router.push("/admin");
                         }}
                         className="w-full text-left px-3 py-2 rounded-lg hover:bg-secondary text-sm text-[var(--gold)] font-semibold"
                       >

@@ -105,7 +105,7 @@ interface LiveGameState {
 // ─── API Config & Fetch Helper ───────────────────────────────────────────────
 
 const API_URL =
-  (import.meta as any).env?.VITE_API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
   (typeof window !== "undefined"
     ? `${window.location.protocol}//${window.location.hostname}:5001/api`
     : "http://localhost:5001/api");

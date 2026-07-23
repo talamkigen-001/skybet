@@ -1,5 +1,6 @@
+"use client";
 import { useGame } from "@/lib/game-store";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 
 export function HistoryBar() {
   const history = useGame((s) => s.history);
@@ -15,8 +16,7 @@ export function HistoryBar() {
               : "text-[var(--loss)] border-[var(--loss)]/40";
         return (
           <Link
-            to="/fairness"
-            search={{ nonce: r.nonce }}
+            href={`/fairness?nonce=${r.nonce}`}
             key={r.id}
             className={`shrink-0 font-mono-tabular text-xs px-2.5 py-1 rounded-md border ${color} bg-secondary/40 hover:bg-secondary transition-colors`}
             title={`Round #${r.nonce} — verify`}

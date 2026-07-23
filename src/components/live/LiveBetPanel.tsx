@@ -1,3 +1,4 @@
+"use client";
 import { useLiveGame } from "@/lib/live-game-store";
 import { useGame } from "@/lib/game-store";
 import { useLocale, formatMoney } from "@/lib/locale";

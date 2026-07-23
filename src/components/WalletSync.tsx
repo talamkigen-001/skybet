@@ -1,3 +1,4 @@
+"use client";
 import { useEffect } from "react";
 import { useWallet } from "@/hooks/use-wallet";
 import { useGame } from "@/lib/game-store";
