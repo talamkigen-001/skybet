@@ -8,6 +8,7 @@ import {
   CURRENCIES,
   LANGUAGES,
   formatMoney,
+  convertMoney,
   useLocale,
   EXCHANGE_RATES,
   type CurrencyCode,
@@ -33,17 +34,36 @@ export function CasinoTopBar() {
   const setLanguage = store.setLanguage;
   const queryClient = useQueryClient();
   const setCurrency = async (c: CurrencyCode) => {
+    const oldCurrency = store.currency;
+    if (oldCurrency === c) return;
+
+    // Convert local game balance & bet amounts directly for instant UI feedback
+    const currentBalance = useGame.getState().balance;
+    const newLocalBalance = convertMoney(currentBalance, oldCurrency, c);
+    useGame.getState().setBalance(newLocalBalance);
+
+    const currentBet = useGame.getState().betAmount;
+    useGame.getState().setBetAmount(Math.max(1, convertMoney(currentBet, oldCurrency, c)));
+
+    const currentBet2 = useGame.getState().betAmount2;
+    useGame.getState().setBetAmount(Math.max(1, convertMoney(currentBet2, oldCurrency, c)));
+
+    // Update locale state
     store.setCurrency(c);
+
+    // Update Supabase wallet if user is authenticated
     if (user) {
       const { data: wallet } = await supabase
         .from("wallets")
         .select("balance, bonus_balance, currency")
         .eq("user_id", user.id)
         .maybeSingle();
-      if (wallet && wallet.currency !== c) {
-        const rate = EXCHANGE_RATES[c] / EXCHANGE_RATES[wallet.currency as CurrencyCode];
-        const newBalance = Number((Number(wallet.balance) * rate).toFixed(2));
-        const newBonus = Number((Number(wallet.bonus_balance) * rate).toFixed(2));
+
+      if (wallet) {
+        const fromCurr = (wallet.currency as CurrencyCode) || oldCurrency;
+        const newBalance = convertMoney(Number(wallet.balance), fromCurr, c);
+        const newBonus = convertMoney(Number(wallet.bonus_balance), fromCurr, c);
+
         await supabase
           .from("wallets")
           .update({

@@ -32,6 +32,27 @@ export const CURRENCIES = [
 export type LanguageCode = (typeof LANGUAGES)[number]["code"];
 export type CurrencyCode = (typeof CURRENCIES)[number]["code"];
 
+export const EXCHANGE_RATES: Record<CurrencyCode, number> = {
+  EUR: 1.0,
+  USD: 1.08,
+  RON: 4.97,
+  MDL: 19.25,
+  GBP: 0.85,
+  PLN: 4.31,
+  UAH: 43.5,
+  CHF: 0.96,
+  SEK: 11.2,
+  TRY: 35.1,
+};
+
+export function convertMoney(amount: number, from: CurrencyCode, to: CurrencyCode): number {
+  if (from === to || isNaN(amount)) return amount;
+  const fromRate = EXCHANGE_RATES[from] ?? 1.0;
+  const toRate = EXCHANGE_RATES[to] ?? 1.0;
+  const amountInEUR = amount / fromRate;
+  return Number((amountInEUR * toRate).toFixed(2));
+}
+
 interface LocaleState {
   language: LanguageCode;
   currency: CurrencyCode;
@@ -64,16 +85,3 @@ export function formatMoney(amount: number, code: CurrencyCode): string {
   }
   return `${sym}${value}`;
 }
-
-export const EXCHANGE_RATES: Record<CurrencyCode, number> = {
-  EUR: 1.0,
-  USD: 1.08,
-  RON: 4.97,
-  MDL: 19.25,
-  GBP: 0.85,
-  PLN: 4.31,
-  UAH: 43.5,
-  CHF: 0.96,
-  SEK: 11.2,
-  TRY: 35.1,
-};
