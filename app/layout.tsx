@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -22,6 +22,14 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ["400", "600"],
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#0b0e14",
+};
 
 export const metadata: Metadata = {
   title: {
@@ -53,4 +61,3 @@ export default function RootLayout({
     </html>
   );
 }
-
