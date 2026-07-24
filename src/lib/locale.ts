@@ -36,7 +36,7 @@ export type CurrencyCode = (typeof CURRENCIES)[number]["code"];
 
 export const EXCHANGE_RATES: Record<CurrencyCode, number> = {
   EUR: 1.0,
-  USD: 1.08,
+  USD: 1.14,
   HUF: 395.0,
   MDL: 19.25,
   RON: 4.97,

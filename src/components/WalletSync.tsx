@@ -1,28 +1,28 @@
 "use client";
+
 import { useEffect } from "react";
 import { useWallet } from "@/hooks/use-wallet";
 import { useGame } from "@/lib/game-store";
-import { useLocale } from "@/lib/locale";
+import { useLocale, convertMoney, CurrencyCode } from "@/lib/locale";
 
 /**
  * An invisible component that continuously synchronizes the real
  * backend wallet balance (from Supabase) into the local game store.
- * This guarantees that whenever the user deposits, wins, or loses,
- * the local game state exactly mirrors their real balance.
+ * Converts the wallet balance directly to the active viewing currency.
  */
 export function WalletSync() {
   const { data: wallet } = useWallet();
   const setBalance = useGame((s) => s.setBalance);
-  const store = useLocale();
+  const activeCurrency = useLocale((s) => s.currency);
 
   useEffect(() => {
     if (wallet) {
-      setBalance(Number(wallet.balance));
-      if (wallet.currency && wallet.currency !== store.currency) {
-        store.setCurrency(wallet.currency as any);
-      }
+      const rawBalance = Number(wallet.balance);
+      const dbCurrency = (wallet.currency as CurrencyCode) || "USD";
+      const convertedBalance = convertMoney(rawBalance, dbCurrency, activeCurrency);
+      setBalance(convertedBalance);
     }
-  }, [wallet, setBalance, store]);
+  }, [wallet, setBalance, activeCurrency]);
 
   return null;
 }
