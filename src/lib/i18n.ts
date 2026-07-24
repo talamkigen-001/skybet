@@ -3,11 +3,13 @@ import { useLocale } from "./locale";
 import { en } from "../locales/en";
 import { ro } from "../locales/ro";
 import { ru } from "../locales/ru";
+import { hu } from "../locales/hu";
 
 const dictionaries = {
   en,
   ro,
   ru,
+  hu,
 } as const;
 
 type PathsToStringProps<T> = T extends string

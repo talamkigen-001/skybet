@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 
 export const LANGUAGES = [
   { code: "en", label: "English", flag: "🇬🇧" },
+  { code: "hu", label: "Magyar", flag: "🇭🇺" },
   { code: "ro", label: "Română", flag: "🇷🇴" },
   { code: "ru", label: "Русский", flag: "🇷🇺" },
   { code: "de", label: "Deutsch", flag: "🇩🇪" },
@@ -17,10 +18,11 @@ export const LANGUAGES = [
 ] as const;
 
 export const CURRENCIES = [
-  { code: "EUR", symbol: "€", label: "Euro" },
   { code: "USD", symbol: "$", label: "US Dollar" },
-  { code: "RON", symbol: "lei", label: "Romanian Leu" },
+  { code: "EUR", symbol: "€", label: "Euro" },
+  { code: "HUF", symbol: "Ft", label: "Hungarian Forint" },
   { code: "MDL", symbol: "L", label: "Moldovan Leu" },
+  { code: "RON", symbol: "lei", label: "Romanian Leu" },
   { code: "GBP", symbol: "£", label: "British Pound" },
   { code: "PLN", symbol: "zł", label: "Polish Złoty" },
   { code: "UAH", symbol: "₴", label: "Ukrainian Hryvnia" },
@@ -35,8 +37,9 @@ export type CurrencyCode = (typeof CURRENCIES)[number]["code"];
 export const EXCHANGE_RATES: Record<CurrencyCode, number> = {
   EUR: 1.0,
   USD: 1.08,
-  RON: 4.97,
+  HUF: 395.0,
   MDL: 19.25,
+  RON: 4.97,
   GBP: 0.85,
   PLN: 4.31,
   UAH: 43.5,
@@ -64,7 +67,7 @@ export const useLocale = create<LocaleState>()(
   persist(
     (set) => ({
       language: "en",
-      currency: "EUR",
+      currency: "USD",
       setLanguage: (language) => set({ language }),
       setCurrency: (currency) => set({ currency }),
     }),
@@ -80,7 +83,14 @@ export function formatMoney(amount: number, code: CurrencyCode): string {
   const sym = currencySymbol(code);
   const value = amount.toFixed(2);
   // Postfix for codes that read naturally after the number
-  if (code === "RON" || code === "PLN" || code === "SEK" || code === "CHF") {
+  if (
+    code === "RON" ||
+    code === "PLN" ||
+    code === "SEK" ||
+    code === "CHF" ||
+    code === "HUF" ||
+    code === "MDL"
+  ) {
     return `${value} ${sym}`;
   }
   return `${sym}${value}`;

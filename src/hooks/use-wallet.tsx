@@ -99,7 +99,7 @@ export function useCreateDeposit() {
           user_id: user.id,
           method: vars.method as never,
           amount: vars.amount,
-          currency: vars.currency ?? "EUR",
+          currency: vars.currency ?? "USD",
           status: "pending",
         })
         .select()
@@ -109,6 +109,41 @@ export function useCreateDeposit() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["deposit_requests"] });
+    },
+  });
+}
+
+export function useCreateWithdrawal() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: {
+      method: string;
+      amount: number;
+      currency?: string;
+      details: string;
+    }) => {
+      if (!user) throw new Error("Not signed in");
+
+      const { data, error } = await supabase
+        .from("transactions")
+        .insert({
+          user_id: user.id,
+          type: "withdrawal",
+          amount: -Math.abs(vars.amount),
+          currency: vars.currency ?? "USD",
+          status: "pending",
+          meta: { method: vars.method, details: vars.details },
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["transactions"] });
+      qc.invalidateQueries({ queryKey: ["wallet"] });
     },
   });
 }
