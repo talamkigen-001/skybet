@@ -6,9 +6,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  LayoutDashboard,
+  Users,
+  ArrowDownLeft,
+  ArrowUpRight,
+  History,
+  ArrowLeft,
+  LogOut,
+  ShieldAlert,
+} from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -105,45 +115,94 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   const navLinks = [
-    { href: "/admin", label: "Overview" },
-    { href: "/admin/users", label: "Users" },
-    { href: "/admin/deposits", label: "Deposits" },
-    { href: "/admin/withdrawals", label: "Withdrawals" },
-    { href: "/admin/transactions", label: "Transactions" },
+    { href: "/admin", label: "Overview", icon: LayoutDashboard },
+    { href: "/admin/users", label: "Users", icon: Users },
+    { href: "/admin/deposits", label: "Deposits", icon: ArrowDownLeft },
+    { href: "/admin/withdrawals", label: "Withdrawals", icon: ArrowUpRight },
+    { href: "/admin/transactions", label: "Transactions", icon: History },
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="max-w-[1600px] mx-auto px-4 h-14 flex items-center gap-4">
-          <Link href="/" className="font-display font-extrabold">
-            NOROC <span className="text-[var(--gold)]">JETX</span>
-          </Link>
-          <span className="text-muted-foreground">/</span>
-          <span className="font-semibold">Admin</span>
-          <nav className="flex items-center gap-1 ml-4">
+    <div className="min-h-screen bg-background flex flex-col md:flex-row">
+      {/* Left Sidebar Navigation */}
+      <aside className="w-full md:w-64 shrink-0 bg-card border-r border-border flex flex-col justify-between p-4 md:sticky md:top-0 md:h-screen">
+        <div className="space-y-6">
+          {/* Logo & Header */}
+          <div className="px-2 py-2 flex items-center justify-between border-b border-border/60 pb-4">
+            <Link href="/" className="font-display font-extrabold text-lg tracking-tight">
+              NOROC <span className="text-[var(--gold)]">JETX</span>
+            </Link>
+            <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center gap-1">
+              <ShieldAlert className="w-2.5 h-2.5" /> Admin
+            </span>
+          </div>
+
+          {/* Links list */}
+          <nav className="space-y-1">
             {navLinks.map((l) => {
+              const Icon = l.icon;
               const isActive =
                 l.href === "/admin" ? pathname === "/admin" : pathname.startsWith(l.href);
               return (
                 <Link
                   key={l.href}
                   href={l.href}
-                  className={
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
                     isActive
-                      ? "px-3 py-1.5 rounded-lg text-sm bg-primary/15 text-primary font-semibold"
-                      : "px-3 py-1.5 rounded-lg text-sm hover:bg-secondary"
-                  }
+                      ? "bg-primary/15 text-primary border-l-2 border-primary"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
                 >
-                  {l.label}
+                  <Icon className="w-4 h-4" />
+                  <span>{l.label}</span>
                 </Link>
               );
             })}
           </nav>
-          <div className="ml-auto text-xs text-muted-foreground">{user.email}</div>
         </div>
-      </header>
-      <main className="max-w-[1600px] mx-auto px-4 py-6">{children}</main>
+
+        {/* Footer Actions */}
+        <div className="space-y-2 pt-4 border-t border-border/60 mt-6">
+          <div className="px-3 py-2 rounded-xl bg-secondary/40 border border-border/40 text-[11px] font-mono text-muted-foreground truncate leading-relaxed">
+            Logged in as:<br />
+            <span className="text-foreground font-bold font-sans">{user.email}</span>
+          </div>
+          <Link
+            href="/"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-secondary transition"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Casino</span>
+          </Link>
+          <button
+            onClick={() => signOut()}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 transition"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Header bar */}
+        <header className="h-14 border-b border-border/60 bg-card/45 backdrop-blur-md sticky top-0 z-20 px-6 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+            <span>Admin Control Panel</span>
+            <span>/</span>
+            <span className="text-foreground capitalize font-bold">
+              {pathname === "/admin" ? "Overview" : pathname.split("/").pop()}
+            </span>
+          </div>
+          <div className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full flex items-center gap-1">
+            🟢 System Active
+          </div>
+        </header>
+
+        {/* Content Body */}
+        <main className="flex-1 p-6 overflow-y-auto max-w-[1600px] w-full mx-auto">{children}</main>
+      </div>
     </div>
   );
 }
