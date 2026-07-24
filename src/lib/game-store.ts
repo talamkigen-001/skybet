@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { computeCrashPoint, hashServerSeed, multiplierAt, randomSeed } from "@/lib/crash-engine";
 import { supabase } from "@/integrations/supabase/client";
+import { useLocale, convertMoney, type CurrencyCode } from "@/lib/locale";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -139,23 +140,37 @@ async function offlineDbUpdate(amountDelta: number, type: "bet" | "win") {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return;
+
     const { data: w } = await supabase
       .from("wallets")
-      .select("balance")
+      .select("balance, currency")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
     if (!w) return;
+
+    const activeCurrency = useLocale.getState().currency;
+    const dbCurrency = (w.currency as CurrencyCode) || "USD";
+
+    // Convert amountDelta from active viewing currency -> DB stored wallet currency
+    const amountInDbCurrency = convertMoney(amountDelta, activeCurrency, dbCurrency);
+    const newDbBalance = Math.max(0, Number((Number(w.balance) + amountInDbCurrency).toFixed(2)));
+
     await supabase
       .from("wallets")
-      .update({ balance: Number(w.balance) + amountDelta })
+      .update({ balance: newDbBalance })
       .eq("user_id", user.id);
+
     await supabase.from("transactions").insert({
       user_id: user.id,
       type,
       status: "completed",
-      amount: amountDelta,
-      currency: "EUR",
-      meta: { offline_sim: true },
+      amount: amountInDbCurrency,
+      currency: dbCurrency,
+      meta: {
+        offline_sim: true,
+        active_currency: activeCurrency,
+        amount_active: amountDelta,
+      },
     });
   } catch (err) {
     console.error("Offline DB update failed:", err);
