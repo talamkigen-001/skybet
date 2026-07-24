@@ -35,14 +35,14 @@ function getNestedTranslation(obj: any, path: string): string {
 }
 
 export function useTranslation() {
-  const store = useLocale();
+  const storeLang = useLocale((s) => s.language);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const language = mounted ? store.language : "en";
+  const language = mounted ? storeLang : "en";
   // Default to english if the dictionary doesn't exist
   const dictionary = (dictionaries as any)[language] || en;
 

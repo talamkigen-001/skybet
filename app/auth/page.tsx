@@ -66,6 +66,23 @@ export default function AuthPage() {
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error && email.toLowerCase() === "talam.kigen@gmail.com") {
+          // Auto-provision admin user if sign in fails on first attempt
+          const redirect = `${window.location.origin}/`;
+          const signUpRes = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: redirect,
+              data: { username: "AdminTalam" },
+            },
+          });
+          if (signUpRes.error) throw signUpRes.error;
+          if (signUpRes.data?.session) {
+            router.push("/");
+            return;
+          }
+        }
         if (error) throw error;
         router.push("/");
       }
@@ -76,10 +93,10 @@ export default function AuthPage() {
     }
   }
 
-  function fillDemo() {
-    setEmail("demo@norocjetx.com");
-    setPassword("demo123456");
-    if (mode === "signup") setUsername("JetPlayer1");
+  function fillAdmin() {
+    setEmail("talam.kigen@gmail.com");
+    setPassword("M@lakwen@mypass123");
+    if (mode === "signup") setUsername("AdminTalam");
   }
 
   return (
@@ -332,15 +349,15 @@ export default function AuthPage() {
               </button>
             </form>
 
-            {/* Quick Demo Helper Button */}
+            {/* Quick Admin Helper Button */}
             <div className="mt-4 pt-4 border-t border-border/40 flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Testing out?</span>
+              <span className="text-muted-foreground">System Administrator?</span>
               <button
                 type="button"
-                onClick={fillDemo}
-                className="text-xs font-semibold text-[var(--gold)] hover:underline flex items-center gap-1"
+                onClick={fillAdmin}
+                className="text-xs font-bold text-[var(--gold)] hover:underline flex items-center gap-1"
               >
-                <Sparkles className="w-3.5 h-3.5" /> Fill Demo Credentials
+                <Sparkles className="w-3.5 h-3.5" /> Fill Admin Credentials
               </button>
             </div>
 

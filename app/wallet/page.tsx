@@ -107,7 +107,8 @@ export default function WalletPage() {
   const [tab, setTab] = useState<"deposit" | "withdraw">("deposit");
 
   // Deposit State
-  const [depositCategory, setDepositCategory] = useState<"admin_contact" | "crypto">("admin_contact");
+  const [depositCategory, setDepositCategory] = useState<"banks" | "crypto">("banks");
+  const [selectedBank, setSelectedBank] = useState<string>("MAIB");
   const [cryptoMethod, setCryptoMethod] = useState<string>("btc");
 
   // Minimum deposit requirement = $200 USD equivalent in active currency
@@ -118,13 +119,15 @@ export default function WalletPage() {
   const [copied, setCopied] = useState<boolean>(false);
 
   // Deposit Admin Contact Form State
-  const [contactMethod, setContactMethod] = useState<string>("Bank Transfer");
+  const [contactMethod, setContactMethod] = useState<string>("MAIB (MDL)");
   const [contactMessage, setContactMessage] = useState<string>("");
   const [contactSubmitted, setContactSubmitted] = useState<boolean>(false);
 
   // Withdrawal State
   const minWithdrawInActiveCurrency = convertMoney(50, "USD", currency);
-  const [withdrawMethod, setWithdrawMethod] = useState<"bank" | "crypto" | "card" | "revolut">("bank");
+  const [withdrawMethod, setWithdrawMethod] = useState<
+    "bank" | "mdl_banks" | "huf_banks" | "tjs_bank" | "crypto" | "card" | "revolut"
+  >("mdl_banks");
   const [withdrawAmount, setWithdrawAmount] = useState<number>(minWithdrawInActiveCurrency);
   const [withdrawDetails, setWithdrawDetails] = useState<string>("");
   const [withdrawBusy, setWithdrawBusy] = useState<boolean>(false);
@@ -137,13 +140,13 @@ export default function WalletPage() {
   useEffect(() => {
     setDepositAmount(minDepositInActiveCurrency);
     setWithdrawAmount(minWithdrawInActiveCurrency);
-  }, [currency]);
+  }, [currency, minDepositInActiveCurrency, minWithdrawInActiveCurrency]);
 
   // Handle Crypto Deposit submission
   async function submitCryptoDeposit() {
     if (depositAmount < minDepositInActiveCurrency) {
       toast.error(
-        `Minimum deposit amount is $200 USD (${formatMoney(minDepositInActiveCurrency, currency)})`,
+        `${t("wallet.toast_min_deposit")} (${formatMoney(minDepositInActiveCurrency, currency)})`,
       );
       return;
     }
@@ -154,7 +157,7 @@ export default function WalletPage() {
         currency,
       });
       setCryptoSubmitted({ id: res.id, method: cryptoMethod });
-      toast.success("Deposit request generated successfully!");
+      toast.success(t("wallet.toast_deposit_success"));
     } catch (e: any) {
       toast.error(e.message || "Failed to create deposit request");
     }
@@ -165,12 +168,12 @@ export default function WalletPage() {
     e.preventDefault();
     if (depositAmount < minDepositInActiveCurrency) {
       toast.error(
-        `Minimum deposit amount is $200 USD (${formatMoney(minDepositInActiveCurrency, currency)})`,
+        `${t("wallet.toast_min_deposit")} (${formatMoney(minDepositInActiveCurrency, currency)})`,
       );
       return;
     }
     setContactSubmitted(true);
-    toast.success("Deposit request sent to Billing Admin!");
+    toast.success(t("wallet.toast_inquiry_success"));
   };
 
   // Handle Withdrawal submission
@@ -180,18 +183,18 @@ export default function WalletPage() {
 
     if (withdrawAmount < minWithdrawInActiveCurrency) {
       toast.error(
-        `Minimum withdrawal amount is $50 USD (${formatMoney(minWithdrawInActiveCurrency, currency)})`,
+        `${t("wallet.toast_min_withdrawal")} (${formatMoney(minWithdrawInActiveCurrency, currency)})`,
       );
       return;
     }
 
     if (withdrawAmount > currentBalance) {
-      toast.error("Insufficient balance for this withdrawal amount");
+      toast.error(t("wallet.toast_insufficient_balance"));
       return;
     }
 
     if (!withdrawDetails.trim()) {
-      toast.error("Please enter recipient account or wallet details");
+      toast.error(t("wallet.toast_enter_details"));
       return;
     }
 
@@ -208,7 +211,7 @@ export default function WalletPage() {
       const newBal = Number((currentBalance - withdrawAmount).toFixed(2));
       useGame.getState().setBalance(newBal);
 
-      toast.success("Withdrawal request submitted successfully!");
+      toast.success(t("wallet.toast_withdrawal_success"));
       setWithdrawDetails("");
     } catch (e: any) {
       toast.error(e.message || "Failed to process withdrawal");
@@ -220,7 +223,7 @@ export default function WalletPage() {
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
-    toast.success("Copied to clipboard!");
+    toast.success(t("wallet.toast_copied"));
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -234,26 +237,26 @@ export default function WalletPage() {
         <div className="grid md:grid-cols-3 gap-4">
           <div className="md:col-span-2 rounded-3xl p-6 glass-panel border border-border/60 bg-gradient-to-br from-primary/10 via-transparent to-accent/10">
             <div className="text-xs text-muted-foreground uppercase font-extrabold tracking-wider">
-              Available Wallet Balance
+              {t("wallet.available_balance")}
             </div>
             <div className="text-4xl font-display font-extrabold text-[var(--gold)] mt-1 font-mono-tabular">
               {formatMoney(wallet?.balance ?? useGame.getState().balance, currency)}
             </div>
             <div className="mt-2 text-xs text-muted-foreground flex flex-wrap gap-4">
-              <span>Bonus: <strong className="text-foreground">{formatMoney(wallet?.bonus_balance ?? 0, currency)}</strong></span>
-              <span>Total Deposited: <strong className="text-emerald-400">{formatMoney(wallet?.total_deposited ?? 0, currency)}</strong></span>
+              <span>{t("wallet.bonus_balance")}: <strong className="text-foreground">{formatMoney(wallet?.bonus_balance ?? 0, currency)}</strong></span>
+              <span>{t("wallet.total_deposited")}: <strong className="text-emerald-400">{formatMoney(wallet?.total_deposited ?? 0, currency)}</strong></span>
             </div>
           </div>
 
           <div className="rounded-3xl p-6 glass-panel border border-border/60 flex flex-col justify-between">
             <div>
-              <div className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Account Details</div>
+              <div className="text-xs text-muted-foreground uppercase font-bold tracking-wider">{t("wallet.account_details")}</div>
               <div className="mt-1 font-bold text-sm truncate text-foreground">{user.email}</div>
               <div className="text-[10px] text-muted-foreground font-mono truncate mt-1">ID: {user.id}</div>
             </div>
             <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-between text-xs text-emerald-400 font-semibold">
               <span className="flex items-center gap-1">
-                <ShieldCheck className="w-4 h-4" /> Account Verified
+                <ShieldCheck className="w-4 h-4" /> {t("wallet.verified_account")}
               </span>
               <span className="text-muted-foreground font-mono">{currency}</span>
             </div>
@@ -272,7 +275,7 @@ export default function WalletPage() {
             }`}
           >
             <ArrowDownLeft className="w-4 h-4 text-emerald-400" />
-            <span>Deposit Funds</span>
+            <span>{t("wallet.deposit_funds")}</span>
           </button>
           <button
             type="button"
@@ -284,7 +287,7 @@ export default function WalletPage() {
             }`}
           >
             <ArrowUpRight className="w-4 h-4 text-amber-400" />
-            <span>Withdraw Funds</span>
+            <span>{t("wallet.withdraw_funds")}</span>
           </button>
         </div>
 
@@ -294,12 +297,12 @@ export default function WalletPage() {
             <div className="rounded-3xl p-6 glass-panel border border-border/60 space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="font-display text-xl font-extrabold">Deposit Funds</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">Instant credit to your casino wallet</p>
+                  <h2 className="font-display text-xl font-extrabold">{t("wallet.deposit_funds")}</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t("wallet.instant_credit")}</p>
                 </div>
                 <div className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-400 text-xs font-bold flex items-center gap-1">
                   <AlertTriangle className="w-3.5 h-3.5" />
-                  <span>Min: $200 USD</span>
+                  <span>Min: $200 USD ({formatMoney(minDepositInActiveCurrency, currency)})</span>
                 </div>
               </div>
 
@@ -307,15 +310,15 @@ export default function WalletPage() {
               <div className="grid grid-cols-2 gap-2 p-1 bg-secondary/40 rounded-2xl border border-border/40">
                 <button
                   type="button"
-                  onClick={() => setDepositCategory("admin_contact")}
+                  onClick={() => setDepositCategory("banks")}
                   className={`py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                    depositCategory === "admin_contact"
+                    depositCategory === "banks"
                       ? "bg-primary text-primary-foreground shadow"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <Building2 className="w-4 h-4" />
-                  <span>Bank / Card / Revolut</span>
+                  <span>{t("wallet.select_bank_category")}</span>
                 </button>
                 <button
                   type="button"
@@ -327,16 +330,16 @@ export default function WalletPage() {
                   }`}
                 >
                   <Coins className="w-4 h-4" />
-                  <span>Crypto (BTC/USDT)</span>
+                  <span>{t("wallet.crypto_category")}</span>
                 </button>
               </div>
 
               {/* Deposit Amount Selector with $200 USD minimum enforcement */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-muted-foreground">Deposit Amount ({currency})</span>
+                  <span className="font-bold text-muted-foreground">{t("wallet.deposit_amount_label")} ({currency})</span>
                   <span className="text-[11px] text-amber-400 font-semibold">
-                    Min: {formatMoney(minDepositInActiveCurrency, currency)} ($200 USD)
+                    Min: {formatMoney(minDepositInActiveCurrency, currency)} (Exact $200 USD)
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -350,7 +353,7 @@ export default function WalletPage() {
                   />
                   <span className="text-muted-foreground font-mono font-bold px-3">{currency}</span>
                 </div>
-                {/* Preset quick buttons */}
+                {/* Preset quick buttons scaled to USD $200, $500, $1000, $2500 */}
                 <div className="grid grid-cols-4 gap-2 pt-1">
                   {[200, 500, 1000, 2500].map((usdVal) => {
                     const localVal = convertMoney(usdVal, "USD", currency);
@@ -372,35 +375,128 @@ export default function WalletPage() {
                 </div>
               </div>
 
-              {/* CATEGORY A: Contact Admin for Bank Transfers / Card Payments / Revolut */}
-              {depositCategory === "admin_contact" && (
+              {/* CATEGORY A: MDL, HUF, TJS Banks & Direct Admin Support Contact */}
+              {depositCategory === "banks" && (
                 <div className="space-y-4 pt-2">
+
+                  {/* Bank Selectors by Currency Region */}
+                  <div className="space-y-3">
+                    {/* MDL Banks */}
+                    <div>
+                      <div className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
+                        <span>🇲🇩 MDL BANKS</span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {[
+                          { id: "MAIB", label: "MAIB" },
+                          { id: "MICB", label: "MICB" },
+                          { id: "VICTORIABANK", label: "VICTORIABANK" },
+                          { id: "PAYNET", label: "PAYNET" },
+                        ].map((b) => (
+                          <button
+                            key={b.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedBank(b.id);
+                              setContactMethod(`${b.label} (MDL)`);
+                            }}
+                            className={`p-2.5 rounded-xl border text-xs font-extrabold transition flex flex-col items-center justify-center gap-1 ${
+                              selectedBank === b.id
+                                ? "border-primary bg-primary/20 text-foreground shadow"
+                                : "border-border/60 bg-secondary/30 hover:bg-secondary text-muted-foreground"
+                            }`}
+                          >
+                            <Building2 className="w-4 h-4 text-emerald-400" />
+                            <span className="truncate w-full text-center">{b.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* HUF Banks */}
+                    <div>
+                      <div className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
+                        <span>🇭🇺 HUF BANKS</span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {[
+                          { id: "REVOLUT", label: "REVOLUT" },
+                          { id: "MKB_BANK", label: "MKB BANK" },
+                          { id: "WISE", label: "WISE" },
+                          { id: "ZEN", label: "ZEN" },
+                        ].map((b) => (
+                          <button
+                            key={b.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedBank(b.id);
+                              setContactMethod(`${b.label} (HUF)`);
+                            }}
+                            className={`p-2.5 rounded-xl border text-xs font-extrabold transition flex flex-col items-center justify-center gap-1 ${
+                              selectedBank === b.id
+                                ? "border-primary bg-primary/20 text-foreground shadow"
+                                : "border-border/60 bg-secondary/30 hover:bg-secondary text-muted-foreground"
+                            }`}
+                          >
+                            <Building2 className="w-4 h-4 text-sky-400" />
+                            <span className="truncate w-full text-center">{b.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* TJS Bank & Support Contact */}
+                    <div>
+                      <div className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
+                        <span>🇹🇯 TJS BANK</span>
+                      </div>
+                      <div className="grid grid-cols-1 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedBank("DUSHANBE_BANK");
+                            setContactMethod("DUSHANBE BANK (TJS)");
+                          }}
+                          className={`p-3 rounded-xl border text-xs font-extrabold transition flex items-center justify-center gap-2 ${
+                            selectedBank === "DUSHANBE_BANK"
+                              ? "border-primary bg-primary/20 text-foreground shadow"
+                              : "border-border/60 bg-secondary/30 hover:bg-secondary text-muted-foreground"
+                          }`}
+                        >
+                          <Building2 className="w-4 h-4 text-amber-400" />
+                          <span>DUSHANBE BANK (Tajikistan)</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Direct Support Info Box */}
                   <div className="rounded-2xl bg-gradient-to-br from-amber-500/10 via-primary/10 to-transparent border border-amber-500/30 p-4 space-y-3">
                     <div className="flex items-center gap-2 font-bold text-sm text-[var(--gold)]">
                       <Headphones className="w-4 h-4" />
-                      <span>Contact Admin for Bank, Card & Revolut Payments</span>
+                      <span>{t("wallet.contact_admin_title")}</span>
                     </div>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      For Card payments, Revolut, SEPA Bank Transfers, and Apple/Google Pay, contact our Billing Admin directly to receive payment links or bank details.
+                      {t("wallet.contact_admin_desc")}
                     </p>
 
                     {/* Direct Contact Admin Buttons */}
                     <div className="grid grid-cols-2 gap-2 pt-1">
                       <a
-                        href="https://t.me/NorocJetX_Support"
+                        href="https://t.me/norocbetsupport"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="h-11 px-3 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/30 text-xs font-extrabold flex items-center justify-center gap-2 transition"
                       >
                         <Send className="w-4 h-4" />
-                        <span>Telegram Admin</span>
+                        <span>t.me/norocbetsupport</span>
                       </a>
                       <a
-                        href="mailto:support@norocjetx.com?subject=Deposit%20Inquiry"
+                        href="mailto:norocbetsupport@gmail.com?subject=Bank%20Deposit%20Inquiry"
                         className="h-11 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-extrabold flex items-center justify-center gap-2 transition"
                       >
                         <Mail className="w-4 h-4" />
-                        <span>Email Support</span>
+                        <span>norocbetsupport@gmail.com</span>
                       </a>
                     </div>
                   </div>
@@ -408,30 +504,37 @@ export default function WalletPage() {
                   {/* Inquiry Form */}
                   {!contactSubmitted ? (
                     <form onSubmit={handleAdminContactSubmit} className="space-y-3 pt-2">
-                      <div className="text-xs font-bold text-muted-foreground">Or Send Direct Billing Inquiry:</div>
+                      <div className="text-xs font-bold text-muted-foreground">{t("wallet.submit_inquiry_title")}</div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="text-[10px] text-muted-foreground block mb-1">Method</label>
+                          <label className="text-[10px] text-muted-foreground block mb-1">{t("wallet.selected_method_label")}</label>
                           <select
                             value={contactMethod}
                             onChange={(e) => setContactMethod(e.target.value)}
                             className="w-full h-10 px-3 rounded-xl bg-secondary/50 border border-border text-xs font-semibold outline-none"
                           >
-                            <option value="Revolut">Revolut Transfer</option>
+                            <option value="MAIB (MDL)">MDL: MAIB</option>
+                            <option value="MICB (MDL)">MDL: MICB</option>
+                            <option value="VICTORIABANK (MDL)">MDL: VICTORIABANK</option>
+                            <option value="PAYNET (MDL)">MDL: PAYNET</option>
+                            <option value="REVOLUT (HUF)">HUF: REVOLUT</option>
+                            <option value="MKB BANK (HUF)">HUF: MKB BANK</option>
+                            <option value="WISE (HUF)">HUF: WISE</option>
+                            <option value="ZEN (HUF)">HUF: ZEN</option>
+                            <option value="DUSHANBE BANK (TJS)">TJS: DUSHANBE BANK</option>
                             <option value="Card Payment">Card Payment (Visa/Mastercard)</option>
                             <option value="Bank Transfer">SEPA Bank Transfer</option>
-                            <option value="Apple/Google Pay">Apple / Google Pay</option>
                           </select>
                         </div>
                         <div>
-                          <label className="text-[10px] text-muted-foreground block mb-1">Deposit Amount</label>
+                          <label className="text-[10px] text-muted-foreground block mb-1">{t("wallet.deposit_amount_label")}</label>
                           <div className="h-10 px-3 rounded-xl bg-secondary/50 border border-border text-xs font-bold flex items-center">
                             {formatMoney(depositAmount, currency)}
                           </div>
                         </div>
                       </div>
                       <textarea
-                        placeholder="Additional details or payment handle..."
+                        placeholder="Enter IBAN, Account Holder Name, or additional notes..."
                         value={contactMessage}
                         onChange={(e) => setContactMessage(e.target.value)}
                         rows={2}
@@ -443,16 +546,16 @@ export default function WalletPage() {
                         className="w-full h-11 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-extrabold shadow-lg disabled:opacity-50 transition flex items-center justify-center gap-2 text-xs"
                       >
                         <Send className="w-4 h-4" />
-                        <span>Send Deposit Request to Admin</span>
+                        <span>{t("wallet.send_request_button")} ({formatMoney(depositAmount, currency)})</span>
                       </button>
                     </form>
                   ) : (
                     <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 space-y-2">
                       <div className="font-bold text-emerald-400 text-sm flex items-center gap-1.5">
-                        <Check className="w-4 h-4" /> Inquiry Sent to Billing Admin
+                        <Check className="w-4 h-4" /> {t("wallet.inquiry_sent_title")}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Your deposit inquiry for <strong>{formatMoney(depositAmount, currency)}</strong> via <strong>{contactMethod}</strong> has been transmitted. Our admin team will respond shortly.
+                        Your deposit inquiry for <strong>{formatMoney(depositAmount, currency)}</strong> via <strong>{contactMethod}</strong> has been transmitted. Our admin team will respond shortly via Telegram <strong>@norocbetsupport</strong> or Gmail <strong>norocbetsupport@gmail.com</strong>.
                       </p>
                       <button
                         type="button"
@@ -496,7 +599,7 @@ export default function WalletPage() {
                         disabled={createDeposit.isPending || depositAmount < minDepositInActiveCurrency}
                         className="w-full h-11 mt-3 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-extrabold shadow-lg disabled:opacity-50 transition flex items-center justify-center gap-2 text-xs"
                       >
-                        {createDeposit.isPending ? "Generating Wallet..." : "Generate Crypto Deposit Address"}
+                        {createDeposit.isPending ? "Generating Wallet..." : `Generate Crypto Deposit Address (${formatMoney(depositAmount, currency)})`}
                       </button>
                     </>
                   ) : (
@@ -536,10 +639,10 @@ export default function WalletPage() {
             {/* Deposit History */}
             <div className="rounded-3xl p-6 glass-panel border border-border/60 flex flex-col justify-between">
               <div>
-                <h3 className="font-display text-lg font-bold mb-4">Recent Deposit Requests</h3>
+                <h3 className="font-display text-lg font-bold mb-4">{t("wallet.recent_requests")}</h3>
                 <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
                   {(deposits ?? []).length === 0 && (
-                    <div className="text-xs text-muted-foreground text-center py-8">No deposits registered yet.</div>
+                    <div className="text-xs text-muted-foreground text-center py-8">{t("wallet.no_deposits")}</div>
                   )}
                   {(deposits ?? []).map((d: any) => (
                     <div key={d.id} className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-secondary/40 border border-border/30">
@@ -558,8 +661,9 @@ export default function WalletPage() {
                   ))}
                 </div>
               </div>
-              <div className="pt-4 border-t border-border/40 text-[11px] text-muted-foreground text-center">
-                All deposits are processed securely with SSL encryption.
+              <div className="pt-4 border-t border-border/40 text-[11px] text-muted-foreground text-center space-y-1">
+                <div>Support Telegram: <a href="https://t.me/norocbetsupport" target="_blank" rel="noopener noreferrer" className="text-sky-400 font-bold hover:underline">t.me/norocbetsupport</a></div>
+                <div>Gmail Support: <a href="mailto:norocbetsupport@gmail.com" className="text-emerald-400 font-bold hover:underline">norocbetsupport@gmail.com</a></div>
               </div>
             </div>
           </div>
@@ -571,33 +675,36 @@ export default function WalletPage() {
             <form onSubmit={submitWithdrawal} className="rounded-3xl p-6 glass-panel border border-border/60 space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="font-display text-xl font-extrabold">Withdraw Funds</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">Request fast payout to your bank, crypto or card</p>
+                  <h2 className="font-display text-xl font-extrabold">{t("wallet.withdraw_funds")}</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t("wallet.request_payout_desc")}</p>
                 </div>
                 <div className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-xs font-bold flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" /> Fast Payouts
+                  <ShieldCheck className="w-3.5 h-3.5" /> {t("wallet.fast_payouts")}
                 </div>
               </div>
 
               {/* Withdrawal Method Switcher */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
-                  { id: "bank", label: "Bank Transfer", icon: "🏛️" },
-                  { id: "crypto", label: "Crypto", icon: "₿" },
-                  { id: "card", label: "Card Payout", icon: "💳" },
-                  { id: "revolut", label: "Revolut", icon: "⚡" },
+                  { id: "mdl_banks", label: t("wallet.mdl_banks_label"), icon: "🇲🇩" },
+                  { id: "huf_banks", label: t("wallet.huf_banks_label"), icon: "🇭🇺" },
+                  { id: "tjs_bank", label: t("wallet.tjs_bank_label"), icon: "🇹🇯" },
+                  { id: "crypto", label: t("wallet.crypto_label"), icon: "₿" },
+                  { id: "bank", label: t("wallet.sepa_bank_label"), icon: "🏛️" },
+                  { id: "revolut", label: t("wallet.revolut_label"), icon: "⚡" },
+                  { id: "card", label: t("wallet.card_label"), icon: "💳" },
                 ].map((m) => (
                   <button
                     key={m.id}
                     type="button"
                     onClick={() => setWithdrawMethod(m.id as any)}
-                    className={`p-3 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1 text-center transition ${
+                    className={`p-2.5 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1 text-center transition ${
                       withdrawMethod === m.id
                         ? "border-primary bg-primary/15 text-foreground shadow"
                         : "border-border/60 bg-secondary/40 hover:bg-secondary text-muted-foreground"
                     }`}
                   >
-                    <span className="text-xl leading-none">{m.icon}</span>
+                    <span className="text-lg leading-none">{m.icon}</span>
                     <span className="truncate w-full">{m.label}</span>
                   </button>
                 ))}
@@ -606,9 +713,9 @@ export default function WalletPage() {
               {/* Withdrawal Amount Input */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-muted-foreground">Withdrawal Amount ({currency})</span>
+                  <span className="font-bold text-muted-foreground">{t("wallet.withdrawal_amount_label")} ({currency})</span>
                   <span className="text-[11px] text-muted-foreground font-semibold">
-                    Min: {formatMoney(minWithdrawInActiveCurrency, currency)} ($50 USD)
+                    Min: {formatMoney(minWithdrawInActiveCurrency, currency)} ({t("wallet.exact_usd_50")})
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -628,10 +735,13 @@ export default function WalletPage() {
               {/* Recipient Details Inputs depending on selected method */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-muted-foreground block">
-                  {withdrawMethod === "bank" && "Bank IBAN & Account Holder Name"}
-                  {withdrawMethod === "crypto" && "Cryptocurrency Wallet Address & Network"}
-                  {withdrawMethod === "card" && "16-Digit Card Number & Expiry"}
-                  {withdrawMethod === "revolut" && "Revolut Tag / Registered Phone Number"}
+                  {withdrawMethod === "mdl_banks" && t("wallet.label_mdl")}
+                  {withdrawMethod === "huf_banks" && t("wallet.label_huf")}
+                  {withdrawMethod === "tjs_bank" && t("wallet.label_tjs")}
+                  {withdrawMethod === "bank" && t("wallet.label_sepa")}
+                  {withdrawMethod === "crypto" && t("wallet.label_crypto")}
+                  {withdrawMethod === "card" && t("wallet.label_card")}
+                  {withdrawMethod === "revolut" && t("wallet.label_revolut")}
                 </label>
                 <textarea
                   required
@@ -639,13 +749,15 @@ export default function WalletPage() {
                   value={withdrawDetails}
                   onChange={(e) => setWithdrawDetails(e.target.value)}
                   placeholder={
-                    withdrawMethod === "bank"
-                      ? "e.g. IBAN: DE89 3704 0044 0532 0130 00, Name: John Doe, BIC: COBA..."
+                    withdrawMethod === "mdl_banks"
+                      ? t("wallet.placeholder_mdl")
+                      : withdrawMethod === "huf_banks"
+                      ? t("wallet.placeholder_huf")
+                      : withdrawMethod === "tjs_bank"
+                      ? t("wallet.placeholder_tjs")
                       : withdrawMethod === "crypto"
-                      ? "e.g. USDT (TRC20): TXsZ9A2sHjG6Z3fD4gH2j9K3L4m5n6P7qR"
-                      : withdrawMethod === "card"
-                      ? "e.g. Card: 4532 •••• •••• 8901, Expiry: 08/28, Name: John Doe"
-                      : "e.g. @john_revolut or +44 7700 900077"
+                      ? t("wallet.placeholder_crypto")
+                      : t("wallet.placeholder_card")
                   }
                   className="w-full p-3.5 rounded-2xl bg-secondary/50 border border-border text-xs outline-none focus:ring-1 focus:ring-primary resize-none font-mono"
                 />
@@ -662,10 +774,10 @@ export default function WalletPage() {
                 className="w-full h-12 rounded-xl bg-gradient-to-r from-amber-500 via-primary to-emerald-500 text-primary-foreground font-extrabold shadow-lg hover:brightness-110 disabled:opacity-50 transition flex items-center justify-center gap-2 text-sm"
               >
                 {withdrawBusy ? (
-                  <span>Processing Payout Request…</span>
+                  <span>{t("wallet.processing_payout")}</span>
                 ) : (
                   <>
-                    <span>Submit Withdrawal of {formatMoney(withdrawAmount, currency)}</span>
+                    <span>{t("wallet.submit_withdrawal_button")} {formatMoney(withdrawAmount, currency)}</span>
                     <ArrowUpRight className="w-4 h-4" />
                   </>
                 )}
@@ -675,44 +787,49 @@ export default function WalletPage() {
             {/* Withdrawal Rules & Info */}
             <div className="rounded-3xl p-6 glass-panel border border-border/60 flex flex-col justify-between space-y-6">
               <div className="space-y-4">
-                <h3 className="font-display text-lg font-bold">Withdrawal Policy & Speed</h3>
+                <h3 className="font-display text-lg font-bold">{t("wallet.policy_speed_title")}</h3>
                 <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
                   <div className="flex items-start gap-3 p-3 rounded-2xl bg-secondary/30 border border-border/40">
                     <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                     <div>
-                      <div className="font-bold text-foreground">Zero Withdrawal Fees</div>
-                      <div>All withdrawals are processed with zero casino service fees.</div>
+                      <div className="font-bold text-foreground">{t("wallet.zero_fees_title")}</div>
+                      <div>{t("wallet.zero_fees_desc")}</div>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3 p-3 rounded-2xl bg-secondary/30 border border-border/40">
                     <Coins className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                     <div>
-                      <div className="font-bold text-foreground">Fast Crypto & Revolut Payouts</div>
-                      <div>Crypto & Revolut transfers are processed within 15–30 minutes after verification.</div>
+                      <div className="font-bold text-foreground">{t("wallet.fast_payouts_title")}</div>
+                      <div>{t("wallet.fast_payouts_desc")}</div>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3 p-3 rounded-2xl bg-secondary/30 border border-border/40">
                     <Building2 className="w-5 h-5 text-sky-400 shrink-0 mt-0.5" />
                     <div>
-                      <div className="font-bold text-foreground">SEPA & Card Transfers</div>
-                      <div>Bank SEPA transfers and Visa/Mastercard payouts complete within 1-2 business days.</div>
+                      <div className="font-bold text-foreground">{t("wallet.sepa_transfers_title")}</div>
+                      <div>{t("wallet.sepa_transfers_desc")}</div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/15 via-accent/10 to-transparent border border-primary/30 text-xs flex items-center justify-between">
-                <span className="font-bold text-foreground">Need help with your payout?</span>
-                <a
-                  href="https://t.me/NorocJetX_Support"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground font-bold hover:brightness-110 transition"
-                >
-                  Contact Support
-                </a>
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/15 via-accent/10 to-transparent border border-primary/30 text-xs flex flex-col gap-2">
+                <div className="flex items-center justify-between font-bold text-foreground">
+                  <span>{t("wallet.need_help")}</span>
+                  <a
+                    href="https://t.me/norocbetsupport"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground font-bold hover:brightness-110 transition"
+                  >
+                    Telegram Admin
+                  </a>
+                </div>
+                <div className="text-[11px] text-muted-foreground">
+                  Gmail: <strong className="text-foreground select-all">norocbetsupport@gmail.com</strong>
+                </div>
               </div>
             </div>
           </div>
@@ -752,7 +869,7 @@ export default function WalletPage() {
                 {(txs ?? []).length === 0 && (
                   <tr>
                     <td colSpan={4} className="py-6 text-center text-muted-foreground">
-                      No transaction history yet.
+                      {t("wallet.no_history")}
                     </td>
                   </tr>
                 )}

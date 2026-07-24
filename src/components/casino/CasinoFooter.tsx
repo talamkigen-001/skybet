@@ -31,6 +31,7 @@ export function CasinoFooter() {
     {
       title: t("footer.company"),
       links: [
+        [t("topbar.admin_dashboard"), "/admin"],
         [t("footer.about"), "/"],
         [t("footer.terms"), "/"],
         [t("footer.privacy"), "/"],
@@ -52,7 +53,7 @@ export function CasinoFooter() {
           <p className="mt-3 text-xs text-muted-foreground max-w-sm leading-relaxed">
             {t("footer.desc")}
           </p>
-          <div className="mt-3 flex gap-2 text-muted-foreground">
+          <div className="mt-3 flex flex-wrap gap-2 text-muted-foreground">
             {["18+", "RG", "SSL", "PF"].map((t) => (
               <span
                 key={t}
@@ -61,6 +62,33 @@ export function CasinoFooter() {
                 {t}
               </span>
             ))}
+          </div>
+
+          {/* Support Contacts */}
+          <div className="mt-4 p-3 rounded-2xl bg-secondary/30 border border-border/40 space-y-1.5 text-xs">
+            <div className="font-bold text-foreground flex items-center gap-1.5">
+              <span>🎧 24/7 Official Support</span>
+            </div>
+            <div className="text-muted-foreground">
+              Telegram Admin:{" "}
+              <a
+                href="https://t.me/norocbetsupport"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sky-400 font-bold hover:underline"
+              >
+                t.me/norocbetsupport
+              </a>
+            </div>
+            <div className="text-muted-foreground">
+              Gmail Support:{" "}
+              <a
+                href="mailto:norocbetsupport@gmail.com"
+                className="text-emerald-400 font-bold hover:underline"
+              >
+                norocbetsupport@gmail.com
+              </a>
+            </div>
           </div>
         </div>
         {cols.map((c) => (
@@ -84,8 +112,9 @@ export function CasinoFooter() {
         ))}
       </div>
       <div className="border-t border-border/60 py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} 1win Live Casino · {t("footer.copyright")}
+        © {new Date().getFullYear()} Noroc Bet Casino · {t("footer.copyright")}
       </div>
     </footer>
   );
 }
+
